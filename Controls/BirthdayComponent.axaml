@@ -1,0 +1,20 @@
+<ci:ComponentBase x:Class="BirthdayReminder.Controls.BirthdayComponent"
+                  x:TypeArguments="models:BirthdayComponentSettings"
+                  xmlns="https://github.com/avaloniaui"
+                  xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                  xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+                  xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+                  xmlns:ci="http://classisland.tech/schemas/xaml/core"
+                  xmlns:models="clr-namespace:BirthdayReminder.Models"
+                  mc:Ignorable="d"
+                  d:DesignHeight="40" d:DesignWidth="420">
+    <!-- 主界面组件容器高度固定为单行，因此这里保持单行排布。 -->
+    <StackPanel x:Name="Root" Orientation="Horizontal" VerticalAlignment="Center" Spacing="6">
+        <TextBlock x:Name="IconText" Text="🎂" FontSize="20" VerticalAlignment="Center"/>
+        <TextBlock x:Name="MainText"
+                   VerticalAlignment="Center"
+                   TextWrapping="NoWrap"
+                   TextTrimming="CharacterEllipsis"
+                   FontSize="16"/>
+    </StackPanel>
+</ci:ComponentBase>

@@ -1,0 +1,44 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+    <PropertyGroup>
+        <TargetFramework>net8.0</TargetFramework>
+        <ImplicitUsings>enable</ImplicitUsings>
+        <Nullable>enable</Nullable>
+        <RootNamespace>BirthdayReminder</RootNamespace>
+        <AssemblyName>BirthdayReminder</AssemblyName>
+        <Version>1.0.0.0</Version>
+        <!-- 插件必须启用动态加载，依赖库才会被复制到输出目录 -->
+        <EnableDynamicLoading>true</EnableDynamicLoading>
+        <!-- 生成 .cipx 插件包（需要安装 PowerShell 7 的 pwsh；不需要时可改为 false） -->
+        <CreateCipx>true</CreateCipx>
+        <!-- 本插件使用反射绑定，不启用编译绑定 -->
+        <AvaloniaUseCompiledBindingsByDefault>false</AvaloniaUseCompiledBindingsByDefault>
+        <Configurations>Debug;Release</Configurations>
+    </PropertyGroup>
+
+    <PropertyGroup>
+        <!-- 面向 ClassIsland 2.x -->
+        <ClassIslandPluginSdkVersion>2.0.0.*</ClassIslandPluginSdkVersion>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <PackageReference Include="ClassIsland.PluginSdk" Version="$(ClassIslandPluginSdkVersion)">
+            <ExcludeAssets>runtime; native</ExcludeAssets>
+        </PackageReference>
+        <!-- 读写 xlsx：纯托管、体积小 -->
+        <PackageReference Include="MiniExcel" Version="1.*" />
+    </ItemGroup>
+
+    <ItemGroup>
+        <None Update="manifest.yml">
+            <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+        </None>
+        <None Update="README.md">
+            <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+        </None>
+        <None Update="icon.png">
+            <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+        </None>
+    </ItemGroup>
+
+</Project>

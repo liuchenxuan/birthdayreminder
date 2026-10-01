@@ -1,0 +1,257 @@
+<ci:SettingsPageBase x:Class="BirthdayReminder.Views.SettingsPages.BirthdaySettingsPage"
+                     xmlns="https://github.com/avaloniaui"
+                     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+                     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+                     xmlns:ci="http://classisland.tech/schemas/xaml/core"
+                     xmlns:fa="clr-namespace:FluentAvalonia.UI.Controls;assembly=FluentAvalonia"
+                     xmlns:local="clr-namespace:BirthdayReminder.Views.SettingsPages"
+                     mc:Ignorable="d"
+                     d:DesignHeight="1200" d:DesignWidth="760">
+    <ScrollViewer>
+        <StackPanel Spacing="10" MaxWidth="780" HorizontalAlignment="Stretch" Margin="0,0,12,32"
+                    DataContext="{Binding Vm, RelativeSource={RelativeSource FindAncestor, AncestorType=local:BirthdaySettingsPage}}">
+
+            <!-- ───────── 概览 + 测试 ───────── -->
+            <TextBlock Text="概览与测试" FontSize="18" FontWeight="Bold"/>
+            <Border CornerRadius="8" Padding="14" BorderThickness="1"
+                    Background="{DynamicResource CardBackgroundFillColorDefaultBrush}"
+                    BorderBrush="{DynamicResource CardStrokeColorDefaultBrush}">
+                <StackPanel Spacing="6">
+                    <TextBlock Text="{Binding TodaySummary}" FontWeight="SemiBold" TextWrapping="Wrap"/>
+                    <TextBlock Text="{Binding NextSummary}" TextWrapping="Wrap"/>
+                    <TextBlock Text="{Binding MonthSummary}" TextWrapping="Wrap" Opacity="0.8"/>
+                    <Separator Margin="0,6"/>
+                    <TextBlock Text="测试按钮使用名单中的前几个人作为示例（名单为空时使用示例人物），不会写入“已提醒”记录。"
+                               TextWrapping="Wrap" Opacity="0.65" FontSize="12"/>
+                    <WrapPanel>
+                        <Button Content="🔔 测试完整提醒" Click="ButtonTestFull_OnClick" Margin="0,4,8,0"/>
+                        <Button Content="📰 仅横幅" Click="ButtonTestBanner_OnClick" Margin="0,4,8,0"/>
+                        <Button Content="🎆 仅全屏动画" Click="ButtonTestCelebration_OnClick" Margin="0,4,8,0"/>
+                        <Button Content="🔊 仅语音" Click="ButtonTestSpeech_OnClick" Margin="0,4,8,0"/>
+                        <Button Content="♻ 清除已提醒记录" Click="ButtonClearFired_OnClick" Margin="0,4,8,0"/>
+                    </WrapPanel>
+                </StackPanel>
+            </Border>
+
+            <!-- ───────── 提醒时机 ───────── -->
+            <TextBlock Text="提醒时机（可多选，同时生效）" FontSize="18" FontWeight="Bold" Margin="0,12,0,0"/>
+            <Border CornerRadius="8" Padding="14" BorderThickness="1"
+                    Background="{DynamicResource CardBackgroundFillColorDefaultBrush}"
+                    BorderBrush="{DynamicResource CardStrokeColorDefaultBrush}">
+                <StackPanel Spacing="8">
+                    <WrapPanel>
+                        <CheckBox Content="生日当天" IsChecked="{Binding Settings.Remind0Day}" Margin="0,0,16,0"/>
+                        <CheckBox Content="提前 1 天" IsChecked="{Binding Settings.Remind1Day}" Margin="0,0,16,0"/>
+                        <CheckBox Content="提前 3 天" IsChecked="{Binding Settings.Remind3Days}" Margin="0,0,16,0"/>
+                        <CheckBox Content="提前 7 天" IsChecked="{Binding Settings.Remind7Days}" Margin="0,0,16,0"/>
+                        <CheckBox Content="提前 30 天" IsChecked="{Binding Settings.Remind30Days}" Margin="0,0,16,0"/>
+                    </WrapPanel>
+                    <Grid ColumnDefinitions="Auto,*" ColumnSpacing="8">
+                        <TextBlock Text="自定义提前天数" VerticalAlignment="Center"/>
+                        <TextBox Grid.Column="1" Watermark="例如 14, 60（用逗号分隔）"
+                                 Text="{Binding Settings.CustomOffsets, UpdateSourceTrigger=PropertyChanged}"/>
+                    </Grid>
+                    <TextBlock Text="同一时间点命中的多人、多档提醒会自动合并成一条。" Opacity="0.65" FontSize="12"/>
+                </StackPanel>
+            </Border>
+
+            <!-- ───────── 提醒时间点 ───────── -->
+            <Grid ColumnDefinitions="*,Auto" Margin="0,12,0,0">
+                <TextBlock Text="提醒的时间点" FontSize="18" FontWeight="Bold" VerticalAlignment="Center"/>
+                <Button Grid.Column="1" Content="＋ 添加时间点" Click="ButtonAddTrigger_OnClick"/>
+            </Grid>
+            <ItemsControl ItemsSource="{Binding Settings.Triggers}">
+                <ItemsControl.ItemTemplate>
+                    <DataTemplate>
+                        <Border CornerRadius="8" Padding="12,8" Margin="0,0,0,6" BorderThickness="1"
+                                Background="{DynamicResource CardBackgroundFillColorDefaultBrush}"
+                                BorderBrush="{DynamicResource CardStrokeColorDefaultBrush}">
+                            <Grid ColumnDefinitions="Auto,170,*,Auto" ColumnSpacing="10">
+                                <ToggleSwitch Grid.Column="0" IsChecked="{Binding Enabled}" OnContent="" OffContent=""/>
+                                <ComboBox Grid.Column="1" SelectedIndex="{Binding Kind}" HorizontalAlignment="Stretch">
+                                    <ComboBoxItem Content="固定时间点"/>
+                                    <ComboBoxItem Content="某节课下课后"/>
+                                    <ComboBoxItem Content="放学时"/>
+                                </ComboBox>
+                                <StackPanel Grid.Column="2" Orientation="Horizontal" Spacing="8" VerticalAlignment="Center">
+                                    <TextBox Width="100" Watermark="08:00" Text="{Binding Time}" IsVisible="{Binding IsFixedTime}"/>
+                                    <TextBlock Text="每天到这个时间提醒（软件稍晚启动也会补发）" Opacity="0.65" FontSize="12"
+                                               VerticalAlignment="Center" IsVisible="{Binding IsFixedTime}"/>
+                                    <TextBlock Text="第" VerticalAlignment="Center" IsVisible="{Binding IsAfterClass}"/>
+                                    <TextBox Width="64" Text="{Binding ClassIndex}" IsVisible="{Binding IsAfterClass}"/>
+                                    <TextBlock Text="节课下课后（按当前课表中“上课”类型的时间点计数）" VerticalAlignment="Center"
+                                               Opacity="0.65" FontSize="12" IsVisible="{Binding IsAfterClass}"/>
+                                </StackPanel>
+                                <Button Grid.Column="3" Content="删除" Click="ButtonRemoveTrigger_OnClick"/>
+                            </Grid>
+                        </Border>
+                    </DataTemplate>
+                </ItemsControl.ItemTemplate>
+            </ItemsControl>
+
+            <!-- ───────── 提醒方式 ───────── -->
+            <TextBlock Text="提醒方式" FontSize="18" FontWeight="Bold" Margin="0,12,0,0"/>
+            <fa:SettingsExpander Header="横幅提醒"
+                                 Description="通过 ClassIsland 提醒系统显示（遮罩 + 正文）。更多效果（强调动画、音效、置顶）请在【设置 → 提醒 → 生日提醒】里调整。">
+                <fa:SettingsExpander.Footer>
+                    <ToggleSwitch IsChecked="{Binding Settings.EnableBanner}"/>
+                </fa:SettingsExpander.Footer>
+            </fa:SettingsExpander>
+            <fa:SettingsExpander Header="全屏强调动画" Description="生日当天播放全屏庆祝动画（Windows 下点击穿透，不影响操作）。">
+                <fa:SettingsExpander.Footer>
+                    <ToggleSwitch IsChecked="{Binding Settings.EnableCelebration}"/>
+                </fa:SettingsExpander.Footer>
+            </fa:SettingsExpander>
+            <fa:SettingsExpander Header="动画样式">
+                <fa:SettingsExpander.Footer>
+                    <ComboBox SelectedIndex="{Binding Settings.CelebrationStyle}" MinWidth="160">
+                        <ComboBoxItem Content="🎊 彩带纷飞"/>
+                        <ComboBoxItem Content="🎈 气球升空"/>
+                        <ComboBoxItem Content="🎆 烟花绽放"/>
+                    </ComboBox>
+                </fa:SettingsExpander.Footer>
+            </fa:SettingsExpander>
+            <fa:SettingsExpander Header="动画时长（秒）">
+                <fa:SettingsExpander.Footer>
+                    <Slider Width="200" Minimum="4" Maximum="30" TickFrequency="1" IsSnapToTickEnabled="True"
+                            Value="{Binding Settings.CelebrationSeconds}" Classes="auto-tooltip"/>
+                </fa:SettingsExpander.Footer>
+            </fa:SettingsExpander>
+            <fa:SettingsExpander Header="仅生日当天播放动画" Description="关闭后，提前提醒也会播放动画。">
+                <fa:SettingsExpander.Footer>
+                    <ToggleSwitch IsChecked="{Binding Settings.CelebrationOnlyToday}"/>
+                </fa:SettingsExpander.Footer>
+            </fa:SettingsExpander>
+            <fa:SettingsExpander Header="语音播报" Description="朗读下方“语音内容”模板。">
+                <fa:SettingsExpander.Footer>
+                    <ToggleSwitch IsChecked="{Binding Settings.EnableSpeech}"/>
+                </fa:SettingsExpander.Footer>
+            </fa:SettingsExpander>
+            <fa:SettingsExpander Header="独立语音播报" Description="开启后使用 ClassIsland 语音服务直接朗读，不依赖【提醒】里的语音开关；关闭则遵循宿主的提醒语音设置。">
+                <fa:SettingsExpander.Footer>
+                    <ToggleSwitch IsChecked="{Binding Settings.StandaloneSpeech}"/>
+                </fa:SettingsExpander.Footer>
+            </fa:SettingsExpander>
+            <fa:SettingsExpander Header="横幅停留时间（秒）" Description="遮罩与正文的显示时长。">
+                <fa:SettingsExpander.Footer>
+                    <StackPanel Orientation="Horizontal" Spacing="8">
+                        <TextBox Width="70" Text="{Binding Settings.BannerMaskSeconds}"/>
+                        <TextBox Width="70" Text="{Binding Settings.BannerOverlaySeconds}"/>
+                    </StackPanel>
+                </fa:SettingsExpander.Footer>
+            </fa:SettingsExpander>
+
+            <!-- ───────── 防重复与其它 ───────── -->
+            <TextBlock Text="防重复与其它" FontSize="18" FontWeight="Bold" Margin="0,12,0,0"/>
+            <fa:SettingsExpander Header="跨时间点去重"
+                                 Description="开启：同一个人同一档提醒当天只提醒一次；关闭：每个时间点各自提醒一次（每个时间点每天最多触发一次）。">
+                <fa:SettingsExpander.Footer>
+                    <ToggleSwitch IsChecked="{Binding Settings.DedupAcrossTriggers}"/>
+                </fa:SettingsExpander.Footer>
+            </fa:SettingsExpander>
+            <fa:SettingsExpander Header="补发窗口（分钟）" Description="软件在提醒时间之后才启动时，在这段时间内仍会补发提醒。">
+                <fa:SettingsExpander.Footer>
+                    <TextBox Width="90" Text="{Binding Settings.CatchUpMinutes}"/>
+                </fa:SettingsExpander.Footer>
+            </fa:SettingsExpander>
+            <fa:SettingsExpander Header="2 月 29 日生日（平年）" Description="只使用公历。非闰年时在哪一天提醒。">
+                <fa:SettingsExpander.Footer>
+                    <ComboBox SelectedIndex="{Binding Settings.Feb29Mode}" MinWidth="160">
+                        <ComboBoxItem Content="2 月 28 日"/>
+                        <ComboBoxItem Content="3 月 1 日"/>
+                    </ComboBox>
+                </fa:SettingsExpander.Footer>
+            </fa:SettingsExpander>
+
+            <!-- ───────── 提醒内容 ───────── -->
+            <TextBlock Text="提醒内容（可自定义）" FontSize="18" FontWeight="Bold" Margin="0,12,0,0"/>
+            <TextBlock Text="{Binding TokenHelp}" TextWrapping="Wrap" Opacity="0.7" FontSize="12"/>
+            <Border CornerRadius="8" Padding="14" BorderThickness="1"
+                    Background="{DynamicResource CardBackgroundFillColorDefaultBrush}"
+                    BorderBrush="{DynamicResource CardStrokeColorDefaultBrush}">
+                <StackPanel Spacing="8">
+                    <TextBlock Text="遮罩（今日）"/>
+                    <TextBox Text="{Binding Settings.MaskTodayFormat, UpdateSourceTrigger=PropertyChanged}"/>
+                    <TextBlock Text="遮罩（预告）"/>
+                    <TextBox Text="{Binding Settings.MaskUpcomingFormat, UpdateSourceTrigger=PropertyChanged}"/>
+                    <TextBlock Text="单人格式（有出生年份，可用 age 年龄、name 姓名）"/>
+                    <TextBox Text="{Binding Settings.ItemFormat, UpdateSourceTrigger=PropertyChanged}"/>
+                    <TextBlock Text="单人格式（无出生年份）"/>
+                    <TextBox Text="{Binding Settings.ItemFormatNoAge, UpdateSourceTrigger=PropertyChanged}"/>
+                    <TextBlock Text="正文：今天的生日"/>
+                    <TextBox Text="{Binding Settings.TodayLineFormat, UpdateSourceTrigger=PropertyChanged}"/>
+                    <TextBlock Text="正文：提前预告（倒计时用 when 或 days）"/>
+                    <TextBox Text="{Binding Settings.UpcomingLineFormat, UpdateSourceTrigger=PropertyChanged}"/>
+                    <TextBlock Text="语音内容：今天"/>
+                    <TextBox Text="{Binding Settings.SpeechTodayFormat, UpdateSourceTrigger=PropertyChanged}"/>
+                    <TextBlock Text="语音内容：预告"/>
+                    <TextBox Text="{Binding Settings.SpeechUpcomingFormat, UpdateSourceTrigger=PropertyChanged}"/>
+                    <TextBlock Text="全屏动画：标题"/>
+                    <TextBox Text="{Binding Settings.CelebrationTitleFormat, UpdateSourceTrigger=PropertyChanged}"/>
+                    <TextBlock Text="全屏动画：副标题"/>
+                    <TextBox Text="{Binding Settings.CelebrationSubtitleFormat, UpdateSourceTrigger=PropertyChanged}"/>
+                    <Separator Margin="0,4"/>
+                    <TextBlock Text="实时预览" FontWeight="SemiBold"/>
+                    <TextBlock Text="{Binding PreviewMask, StringFormat='遮罩：{0}'}" TextWrapping="Wrap"/>
+                    <TextBlock Text="{Binding PreviewOverlay, StringFormat='正文：{0}'}" TextWrapping="Wrap"/>
+                    <TextBlock Text="{Binding PreviewSpeech, StringFormat='语音：{0}'}" TextWrapping="Wrap"/>
+                </StackPanel>
+            </Border>
+
+            <!-- ───────── 名单 ───────── -->
+            <TextBlock Text="生日名单" FontSize="18" FontWeight="Bold" Margin="0,12,0,0"/>
+            <Border CornerRadius="8" Padding="14" BorderThickness="1"
+                    Background="{DynamicResource CardBackgroundFillColorDefaultBrush}"
+                    BorderBrush="{DynamicResource CardStrokeColorDefaultBrush}">
+                <StackPanel Spacing="8">
+                    <Grid ColumnDefinitions="*,150" ColumnSpacing="8">
+                        <TextBox Watermark="🔍 搜索姓名 / 备注 / 日期（如 5月、5月12日、2010）"
+                                 Text="{Binding SearchText, UpdateSourceTrigger=PropertyChanged}"/>
+                        <ComboBox Grid.Column="1" SelectedIndex="{Binding SortIndex}" HorizontalAlignment="Stretch">
+                            <ComboBoxItem Content="录入顺序"/>
+                            <ComboBoxItem Content="按下次生日"/>
+                            <ComboBoxItem Content="按姓名"/>
+                        </ComboBox>
+                    </Grid>
+                    <WrapPanel>
+                        <Button Content="📥 导入 Excel / CSV" Click="ButtonImport_OnClick" Margin="0,0,8,4"/>
+                        <ComboBox SelectedIndex="{Binding ImportModeIndex}" MinWidth="170" Margin="0,0,8,4">
+                            <ComboBoxItem Content="导入方式：合并（跳过重复）"/>
+                            <ComboBoxItem Content="导入方式：同名则更新"/>
+                            <ComboBoxItem Content="导入方式：清空后覆盖"/>
+                        </ComboBox>
+                        <Button Content="📄 下载导入模板" Click="ButtonTemplate_OnClick" Margin="0,0,8,4"/>
+                        <Button Content="📤 导出名单" Click="ButtonExport_OnClick" Margin="0,0,8,4"/>
+                        <Button Content="＋ 添加一人" Click="ButtonAddEntry_OnClick" Margin="0,0,8,4"/>
+                    </WrapPanel>
+                    <TextBlock Text="Excel 表头：姓名、生日（可选：备注）。生日支持 2010-05-12、2010/5/12、2010年5月12日、20100512，只写 5-12 表示不计算年龄。仅公历。"
+                               TextWrapping="Wrap" Opacity="0.65" FontSize="12"/>
+                    <TextBlock Text="{Binding StatusText}" TextWrapping="Wrap" Foreground="{DynamicResource SystemAccentColor}"/>
+                    <TextBlock Text="{Binding CountText}" Opacity="0.7"/>
+                </StackPanel>
+            </Border>
+
+            <ItemsControl ItemsSource="{Binding FilteredEntries}">
+                <ItemsControl.ItemTemplate>
+                    <DataTemplate>
+                        <Border CornerRadius="8" Padding="12,8" Margin="0,0,0,6" BorderThickness="1"
+                                Background="{DynamicResource CardBackgroundFillColorDefaultBrush}"
+                                BorderBrush="{DynamicResource CardStrokeColorDefaultBrush}">
+                            <Grid ColumnDefinitions="Auto,*,140,*,Auto" ColumnSpacing="8">
+                                <ToggleSwitch Grid.Column="0" IsChecked="{Binding Enabled}" OnContent="" OffContent=""/>
+                                <TextBox Grid.Column="1" Watermark="姓名" Text="{Binding Name}"/>
+                                <TextBox Grid.Column="2" Watermark="2010-05-12" Text="{Binding BirthdayText}"/>
+                                <StackPanel Grid.Column="3" Spacing="2">
+                                    <TextBox Watermark="备注（可选）" Text="{Binding Note}"/>
+                                    <TextBlock Text="{Binding Info}" Opacity="0.65" FontSize="12"/>
+                                </StackPanel>
+                                <Button Grid.Column="4" Content="删除" Click="ButtonRemoveEntry_OnClick"/>
+                            </Grid>
+                        </Border>
+                    </DataTemplate>
+                </ItemsControl.ItemTemplate>
+            </ItemsControl>
+        </StackPanel>
+    </ScrollViewer>
+</ci:SettingsPageBase>
